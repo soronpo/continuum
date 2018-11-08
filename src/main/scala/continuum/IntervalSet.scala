@@ -2,25 +2,25 @@ package scala.collection.immutable
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.{RedBlackTree => RB}
-import scala.collection.{GenSet, SortedSetLike, mutable}
+import scala.collection.{GenSet, mutable}
 
 import continuum.Interval
 
 object IntervalSet extends {
-  def empty[T](implicit conv: T=>Ordered[T]): IntervalSet[T] = new IntervalSet()
+  def empty[T](implicit conv: T=>Ordered[T]): IntervalSet[T] = ??? // new IntervalSet()
 
   def apply[T](intervals: Interval[T]*)(implicit conv: T=>Ordered[T]): IntervalSet[T] =
     intervals.foldLeft(empty[T])(_ + _)
 
   def newBuilder[T](implicit conv: T=>Ordered[T]): mutable.Builder[Interval[T], IntervalSet[T]] =
-    new mutable.SetBuilder[Interval[T], IntervalSet[T]](empty)
+    ??? //new mutable.SetBuilder[Interval[T], IntervalSet[T]](empty)
 
-  implicit def canBuildFrom[T](implicit conv: T=>Ordered[T])
-  : CanBuildFrom[IntervalSet[_], Interval[T], IntervalSet[T]] =
-    new CanBuildFrom[IntervalSet[_], Interval[T], IntervalSet[T]] {
-      def apply(from: IntervalSet[_]): mutable.Builder[Interval[T], IntervalSet[T]] = newBuilder[T]
-      def apply(): mutable.Builder[Interval[T], IntervalSet[T]] = newBuilder[T]
-    }
+//  implicit def canBuildFrom[T](implicit conv: T=>Ordered[T])
+//  : CanBuildFrom[IntervalSet[_], Interval[T], IntervalSet[T]] =
+//    new CanBuildFrom[IntervalSet[_], Interval[T], IntervalSet[T]] {
+//      def apply(from: IntervalSet[_]): mutable.Builder[Interval[T], IntervalSet[T]] = ??? //newBuilder[T]
+//      def apply(): mutable.Builder[Interval[T], IntervalSet[T]] = ??? //newBuilder[T]
+//    }
 }
 
 /**
@@ -28,9 +28,9 @@ object IntervalSet extends {
  * coalesced, so at all times an interval set contains the minimum number of necessary intervals.
  * Interval sets are immutable and persistent.
  */
-class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered[T])
+abstract class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered[T])
   extends SortedSet[Interval[T]]
-  with SortedSetLike[Interval[T], IntervalSet[T]]
+//  with SortedSetOps[Interval[T], IntervalSet[T]]
   with Serializable {
 
   def this()(implicit conv: T=>Ordered[T]) = this(null)
@@ -46,8 +46,8 @@ class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered
   override def last = RB.greatest(tree).key
   override def lastOption = if (RB.isEmpty(tree)) None else Some(last)
 
-  override def tail = new IntervalSet(RB.delete(tree, firstKey))
-  override def init = new IntervalSet(RB.delete(tree, lastKey))
+  override def tail : IntervalSet[T] = ??? //new IntervalSet(RB.delete(tree, firstKey))
+  override def init : IntervalSet[T] = ??? //new IntervalSet(RB.delete(tree, lastKey))
 
   override def drop(n: Int) = {
     if (n <= 0) this
@@ -82,7 +82,7 @@ class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered
   override def takeWhile(p: Interval[T] => Boolean) = take(countWhile(p))
   override def span(p: Interval[T] => Boolean) = splitAt(countWhile(p))
 
-  private def newSet(t: RB.Tree[Interval[T], Unit]) = new IntervalSet(t)
+  private def newSet(t: RB.Tree[Interval[T], Unit]) : IntervalSet[T] = ??? //new IntervalSet(t)
 
   override def empty: IntervalSet[T] = IntervalSet.empty
 
@@ -94,10 +94,11 @@ class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered
   }
 
   override def - (interval: Interval[T]): IntervalSet[T] = {
-    val intersectings = intersecting(interval)
-    val differences = intersectings.flatMap(_ difference interval)
-    val diff = intersectings.foldLeft(tree)(RB.delete(_, _))
-    newSet(differences.foldLeft(diff)(RB.update(_, _, (), false)))
+???
+    //    val intersectings = intersecting(interval)
+//    val differences = intersectings.flatMap(_ difference interval)
+//    val diff = intersectings.foldLeft(tree)(RB.delete(_, _))
+//    newSet(differences.foldLeft(diff)(RB.update(_, _, (), false)))
   }
 
   override def contains(interval: Interval[T]): Boolean = {
@@ -109,7 +110,7 @@ class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered
 
   override def iterator: Iterator[Interval[T]] = RB.keysIterator(tree)
 
-  def keysIteratorFrom(start: Interval[T]): Iterator[Interval[T]] = {
+  override def keysIteratorFrom(start: Interval[T]): Iterator[Interval[T]] = {
     val keys = RB.keysIterator(tree)
     keys.drop(keys.indexOf(start))
   }
@@ -118,9 +119,9 @@ class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered
 
   override def rangeImpl(from: Option[Interval[T]], until: Option[Interval[T]]): IntervalSet[T] = newSet(RB.rangeImpl(tree, from, until))
   override def range(from: Interval[T], until: Interval[T]): IntervalSet[T] = newSet(RB.range(tree, from, until))
-  override def from(from: Interval[T]): IntervalSet[T] = newSet(RB.from(tree, from))
-  override def to(to: Interval[T]): IntervalSet[T] = newSet(RB.to(tree, to))
-  override def until(until: Interval[T]): IntervalSet[T] = newSet(RB.until(tree, until))
+//  override def from(from: Interval[T]): IntervalSet[T] = newSet(RB.from(tree, from))
+//  override def to(to: Interval[T]): IntervalSet[T] = newSet(RB.to(tree, to))
+//  override def until(until: Interval[T]): IntervalSet[T] = newSet(RB.until(tree, until))
 
   override def firstKey = head
   override def lastKey = last
@@ -155,8 +156,8 @@ class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered
     IntervalSet(intersecting(interval).toList.flatMap(_ intersect interval):_*)
 
 
-  override def intersect(other: GenSet[Interval[T]]): IntervalSet[T] =
-    other.foldLeft(empty)(_ ++ intersect(_))
+  override def intersect(other: GenSet[Interval[T]]): IntervalSet[T] = ???
+//    other.foldLeft(empty)(_ ++ intersect(_))
 
   /**
    * Alias for `intersect`.
@@ -183,5 +184,5 @@ class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered
 
   def span: Option[Interval[T]] = if (!RB.isEmpty(tree)) Some(head span last) else None
 
-  def complement: IntervalSet[T] = IntervalSet(Interval.all[T]) -- this
+  def complement: IntervalSet[T] = ??? //IntervalSet(Interval.all[T]) -- this
 }
