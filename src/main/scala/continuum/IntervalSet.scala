@@ -19,6 +19,8 @@ object IntervalSet extends {
  * coalesced, so at all times an interval set contains the minimum number of necessary intervals.
  * Interval sets are immutable and persistent.
  */
+
+
 class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered[T])
   extends SortedSet[Interval[T]] with SortedSetOps[Interval[T], SortedSet, IntervalSet[T]]
   with Serializable {
