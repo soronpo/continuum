@@ -2,7 +2,6 @@ package scala.collection.immutable
 
 import scala.collection.immutable.{RedBlackTree => RB}
 import scala.collection.mutable
-
 import continuum.Interval
 
 object IntervalSet extends {
@@ -20,10 +19,18 @@ object IntervalSet extends {
  * Interval sets are immutable and persistent.
  */
 
-
 class IntervalSet[T](tree: RB.Tree[Interval[T], Unit])(implicit conv: T=>Ordered[T])
   extends SortedSet[Interval[T]] with SortedSetOps[Interval[T], SortedSet, IntervalSet[T]]
-  with Serializable {
+  with Serializable { self =>
+//  private def builder = new mutable.Builder[Interval[T], IntervalSet[T]] {
+//    override def result(): IntervalSet[T] = self
+//
+//    override def addOne(elem: Interval[T]): this.type = super.addOne()
+//
+//    override def clear(): Unit = new IntervalSet[T]()
+//  }
+  override protected def fromSpecific(coll: IterableOnce[Interval[T]]): IntervalSet[T] = IntervalSet.create[T](coll.iterator.to(Seq))
+  override protected def newSpecificBuilder : mutable.Builder[Interval[T], IntervalSet[T]] = ???
 
   def this()(implicit conv: T=>Ordered[T]) = this(null)
 
